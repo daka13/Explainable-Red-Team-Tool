@@ -3,8 +3,8 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-dotenv==1.0.0
 aiohttp==3.9.0
-pandas==2.1.0
-numpy==1.24.0
+pandas>=2.1.0
+numpy>=1.23.2,<2.0.0
 pydantic==2.5.0
 
 # API Clients
@@ -12,18 +12,18 @@ google-generativeai==0.3.2
 requests==2.31.0
 
 # Interpretability
-transformers==4.36.0
-shap==0.44.0
-torch==2.1.0
-sentence-transformers==2.2.0
+transformers>=4.36.0
+shap>=0.44.0
+torch>=2.1.0
+sentence-transformers>=2.2.0
 
 # Visualization
-plotly==5.18.0
-matplotlib==3.8.0
-seaborn==0.13.0
-umap-learn==0.5.5
+plotly>=5.18.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+umap-learn>=0.5.5
 
 # Additional
-tqdm==4.66.0
-scikit-learn==1.3.0
+tqdm>=4.66.0
+scikit-learn>=1.3.0
 python-multipart==0.0.6
