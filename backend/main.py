@@ -38,9 +38,19 @@ app.include_router(prompts.router, prefix="/api", tags=["prompts"])
 
 # Serve frontend static files
 frontend_path = Path(__file__).parent.parent / "frontend"
-app.mount("/assets", StaticFiles(directory=str(frontend_path / "assets")), name="assets")
-app.mount("/css", StaticFiles(directory=str(frontend_path / "css")), name="css")
-app.mount("/js", StaticFiles(directory=str(frontend_path / "js")), name="js")
+
+# Mount static directories only if they exist
+static_dirs = {
+    "/assets": frontend_path / "assets",
+    "/css": frontend_path / "css",
+    "/js": frontend_path / "js"
+}
+
+for route, directory in static_dirs.items():
+    if directory.exists():
+        app.mount(route, StaticFiles(directory=str(directory)), name=route.strip("/"))
+    else:
+        print(f"Warning: Directory {directory} does not exist, skipping mount for {route}")
 
 @app.get("/")
 async def read_root():
