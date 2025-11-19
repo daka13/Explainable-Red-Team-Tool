@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Explainable Red Team Tool</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Animated Gradient Mesh Background -->
+    <div class="gradient-mesh"></div>
+
+    <!-- Main Container -->
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="glass-card header-card">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="title">
+                        <i class="fas fa-shield-alt"></i>
+                        Explainable Red Team Tool
+                    </h1>
+                    <p class="subtitle">Multi-Model Adversarial Testing with AI Interpretability</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn-glass" id="settingsBtn">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                    <button class="btn-glass" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="row mt-4">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="glass-card sidebar-card">
+                    <h5 class="card-title"><i class="fas fa-sliders-h"></i> Configuration</h5>
+
+                    <!-- Model Selection -->
+                    <div class="config-section">
+                        <h6>Select Models</h6>
+                        <div id="modelSelection"></div>
+                        <button class="btn-primary w-100 mt-2" id="checkModelsBtn">
+                            <i class="fas fa-plug"></i> Check Connections
+                        </button>
+                    </div>
+
+                    <!-- Prompt Filters -->
+                    <div class="config-section">
+                        <h6>Prompt Filters</h6>
+                        <div class="mb-2">
+                            <label>Categories</label>
+                            <select id="categoryFilter" class="form-select glass-input" multiple>
+                                <!-- Dynamically loaded -->
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label>Difficulty</label>
+                            <select id="difficultyFilter" class="form-select glass-input" multiple>
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                        <div class="prompt-count">
+                            <span id="promptCount">0 prompts selected</span>
+                        </div>
+                    </div>
+
+                    <!-- Run Evaluation -->
+                    <div class="config-section">
+                        <button class="btn-success w-100" id="runEvaluationBtn" disabled>
+                            <i class="fas fa-play"></i> Run Evaluation
+                        </button>
+                        <div class="progress mt-2" style="display: none;" id="progressBar">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div id="statusText" class="mt-2 text-center" style="font-size: 0.85rem;"></div>
+                    </div>
+
+                    <!-- Export -->
+                    <div class="config-section">
+                        <h6>Export Results</h6>
+                        <button class="btn-secondary w-100" id="exportCSV" disabled>
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                        <button class="btn-secondary w-100 mt-2" id="exportJSON" disabled>
+                            <i class="fas fa-file-code"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Panel -->
+            <div class="col-md-9">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs glass-tabs" id="mainTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overviewTab">
+                            <i class="fas fa-chart-line"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#analysisTab">
+                            <i class="fas fa-chart-bar"></i> Analysis
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#interpretabilityTab">
+                            <i class="fas fa-brain"></i> Interpretability
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#promptsTab">
+                            <i class="fas fa-list"></i> Prompts
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#resultsTab">
+                            <i class="fas fa-table"></i> Results
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content mt-3" id="mainTabContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overviewTab">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="metric-card glass-card">
+                                    <div class="metric-value" id="totalTests">0</div>
+                                    <div class="metric-label">Total Tests</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card glass-card">
+                                    <div class="metric-value" id="refusalRate">0%</div>
+                                    <div class="metric-label">Refusal Rate</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card glass-card">
+                                    <div class="metric-value" id="avgLatency">0ms</div>
+                                    <div class="metric-label">Avg Latency</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card glass-card">
+                                    <div class="metric-value" id="totalErrors">0</div>
+                                    <div class="metric-label">Errors</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="glass-card">
+                                    <h6>Refusal Rate by Model</h6>
+                                    <div id="refusalRateChart"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="glass-card">
+                                    <h6>Latency Distribution</h6>
+                                    <div id="latencyChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Tab -->
+                    <div class="tab-pane fade" id="analysisTab">
+                        <div class="glass-card">
+                            <h6>Category Performance Heatmap</h6>
+                            <div id="heatmapChart"></div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="glass-card">
+                                    <h6>Success Rate by Category</h6>
+                                    <div id="successRateChart"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="glass-card">
+                                    <h6>Vulnerability Radar</h6>
+                                    <div id="radarChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interpretability Tab -->
+                    <div class="tab-pane fade" id="interpretabilityTab">
+                        <div class="glass-card">
+                            <h6><i class="fas fa-microscope"></i> Token Attribution Analysis</h6>
+                            <p class="text-muted">Select a test result to analyze token-level importance</p>
+                            <div id="attributionChart"></div>
+                        </div>
+                        <div class="glass-card mt-3">
+                            <h6><i class="fas fa-project-diagram"></i> Embedding Space Visualization</h6>
+                            <button class="btn-primary" id="generateEmbeddings">Generate UMAP Visualization</button>
+                            <div id="embeddingChart" class="mt-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Prompts Tab -->
+                    <div class="tab-pane fade" id="promptsTab">
+                        <div class="glass-card">
+                            <h6><i class="fas fa-book"></i> Prompt Library</h6>
+                            <div class="mb-3">
+                                <button class="btn-primary" id="addCustomPrompt">
+                                    <i class="fas fa-plus"></i> Add Custom Prompt
+                                </button>
+                                <button class="btn-secondary" id="importPrompts">
+                                    <i class="fas fa-file-upload"></i> Import JSON
+                                </button>
+                            </div>
+                            <div id="promptsTable"></div>
+                        </div>
+                    </div>
+
+                    <!-- Results Tab -->
+                    <div class="tab-pane fade" id="resultsTab">
+                        <div class="glass-card">
+                            <h6><i class="fas fa-table"></i> Evaluation Results</h6>
+                            <div class="table-responsive">
+                                <table class="table table-glass" id="resultsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Prompt</th>
+                                            <th>Category</th>
+                                            <th>Refused</th>
+                                            <th>Confidence</th>
+                                            <th>Latency</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resultsTableBody">
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">
+                                                No results yet. Run an evaluation to see results.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-cog"></i> Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>API Keys</h6>
+                    <p class="text-muted">Enter your API keys to enable models. Keys are stored locally in your browser.</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">Google Gemini API Key</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control glass-input" id="geminiApiKey"
+                                   placeholder="AIza...">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleGemini">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-text">
+                            <a href="https://makersuite.google.com/app/apikey" target="_blank">Get API Key</a>
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">HuggingFace Token</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control glass-input" id="hfToken"
+                                   placeholder="hf_...">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleHF">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-text">
+                            <a href="https://huggingface.co/settings/tokens" target="_blank">Get Token</a>
+                        </small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Privacy:</strong> API keys are stored only in your browser's localStorage and never sent to our servers except when making API calls to the respective services.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn-primary" id="saveSettings">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Modal -->
+    <div class="modal fade" id="customPromptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus"></i> Add Custom Prompt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Prompt Text</label>
+                        <textarea class="form-control glass-input" id="customPromptText" rows="5"
+                                  placeholder="Enter your adversarial prompt..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <select class="form-select glass-input" id="customPromptCategory">
+                                <option value="custom">Custom</option>
+                                <option value="jailbreak">Jailbreak</option>
+                                <option value="bias">Bias</option>
+                                <option value="manipulation">Manipulation</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Difficulty</label>
+                            <select class="form-select glass-input" id="customPromptDifficulty">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control glass-input" id="customPromptDescription"
+                               placeholder="Brief description...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-primary" id="saveCustomPrompt">Add Prompt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="/js/api.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
